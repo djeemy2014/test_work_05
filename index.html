@@ -16,7 +16,7 @@
         }
         .menu{
             display: grid;
-            height: 20vh;
+            height: 10vh;
             background-color: #aaa;
         }
         .menu button{
@@ -26,21 +26,29 @@
         .cesium-viwer{
             display: block;
             position: relative;
-            height: 40vh;
+            height: 45vh;
             width: 100vw;
             background-color: #b7bcff;
         }
         #cesiumContainer{
             width: 100vw;
-            height: 40vh;
+            height: 45vh;
            /*  display: flex; */
         }
         .leaflet{
+            display: grid;
+            justify-content: center;
+            align-items: center;
             width: 100vw;
-            height: 40vh;
+            height: 45vh;
         }
-        .look-button{
-
+        .off-button{
+            background-color: #ccc;
+            color: #888;
+        }
+        .on-button{
+            background-color: #fff;
+            color: #000;
         }
     </style>
 </head>
@@ -48,13 +56,17 @@
     <div class="menu">
         <div><input type="file" id="inputFile" title="Загрузка файла">Поместить файл .xml сюда</input></div>
         <div><h4 id="status">Status</h4></div>
-        <button title="Загрузка файла" id="button1" class="button look-button">Загрузка файла</button>
-        <button title="Показать данные" class="button look-button">Показать данные</button>
+        <button title="Показать данные" id="button1" class="button off-button">Показать данные</button>
+        <!-- button title="Показать данные" id="button2" class="button">Показать данные</button> -->
     </div>
     <div class="cesium-viwer">
         <div id="cesiumContainer" class="fullSize"></div>
     </div>
-    <div class="leaflet"></div>
+    <div class="leaflet">
+        <h1>
+            Leaflet.js
+        </h1>
+    </div>
     <script>
         
     </script>
@@ -63,14 +75,15 @@
         const xmlnsTns="http://rosleshoz.gov.ru/xmlns/forestReforestation/4.5"
         selectedFile.addEventListener("change", handleFiles)
         let inputObj
+        let viewerRef
         function readXML(xml){
             let arr=[]
             let number = xml.getElementsByTagNameNS(xmlnsTns,'number')[0].textContent
             let date = xml.getElementsByTagNameNS(xmlnsTns,'date')[0].textContent
             let location = xml.getElementsByTagNameNS(xmlnsTns,'explication')[0].getElementsByTagNameNS(xmlnsTns,'row')
             for (const elem of location){
-                arr.push([parseFloat(elem.getElementsByTagNameNS(xmlnsTns,'longitude')[0].textContent),
-                parseFloat(elem.getElementsByTagNameNS(xmlnsTns,'latitude')[0].textContent)])
+                arr.push(parseFloat(elem.getElementsByTagNameNS(xmlnsTns,'longitude')[0].textContent),
+                parseFloat(elem.getElementsByTagNameNS(xmlnsTns,'latitude')[0].textContent))
             }
             //console.log(number, date)
             //console.log(location.getElementsByTagNameNS(xmlnsTns,'row'))
@@ -85,16 +98,19 @@
                 let parser = new DOMParser();
                 let xml
                 reader.readAsText(file)
-                console.log(reader)
+                //console.log(reader)
                 reader.onload = function() {
                     xml = parser.parseFromString(reader.result,"text/xml");
                     
-                    console.log(1,xml);
+                    //console.log(1,xml);
                     //console.log(xml.getElementsByTagName('tns:number'));
-                    let inputObj = readXML(xml)
-                    console.log(inputObj)
+                    inputObj = readXML(xml)
+                    //console.log(inputObj)
                     document.querySelector('#status').innerHTML='Файл успешно загружен!'
-                    document.querySelector('#button1').addEventListener("click",fuction1)
+                    document.querySelector('#button1').addEventListener("click",visualXML)
+                    document.querySelector('#button1').className='button .on-button'
+                    console.log(document.querySelector('#button1').className)
+            
                 };
                 reader.onerror = function() {
                     document.querySelector('#status').innerHTML='Ошибка чтения файла!!!'
@@ -102,17 +118,45 @@
             }else{
                 document.querySelector('#status').innerHTML='Неверный файл. Загрузите XML-файл'
             }
-            console.log(file)
+            //console.log(file)
         
         }
-        async function fuction1(){
-            await fetching()
+        async function visualXML(){
+            console.log(inputObj)
+            //console.log(document.querySelector("#cesiumContainer"))
+            const polygon = new Cesium.PolygonGraphics({
+                hierarchy:Cesium.Cartesian3.fromDegreesArray(inputObj.location),
+                material: Cesium.Color.RED,
+                //extrudedHeight: 1000
+            })
+            const entity = new Cesium.Entity({
+                name:inputObj.number,
+                polygon: polygon,
+                description:`<table class="cesium-infoBox-defaultTable">
+                    <tbody>
+                        <tr>
+                            <th>Номер Конnура</th>
+                            <td>${inputObj.number}</td>
+                        </tr>
+                        <tr>
+                            <th>Дата Учета</th>
+                            <td>${inputObj.date}</td>
+                        </tr>
+                    </tbody>
+                    </table>`
+            
+            })
+            const poligonAdd = viewerRef.entities.add(entity)
+            viewerRef.camera.flyTo({
+                destination : Cesium.Cartesian3.fromDegrees(92.85055, 57.17743, 15000.0)
+            })
+            console.log(viewerRef)
+            console.log(poligon)
         }
         //import Cesium from 'cesium'
         let data = sessionStorage.getItem('key');
         //console.log(data);
         //document.querySelector('#glotalshow1').forEach(res=>{console.log(res)})
-        console.log(document.querySelector('#glotalshow1'))
         function startup(Cesium) {
             'use strict';
             //Sandcastle_Begin
@@ -120,10 +164,11 @@
         
             //Sandcastle_End
             Sandcastle.finishedLoading();
+            return viewer
         }
         if (typeof Cesium !== 'undefined') {
             window.startupCalled = true;
-            startup(Cesium);
+            viewerRef = startup(Cesium);
         }
     </script>
 </body>
