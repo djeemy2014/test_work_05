@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Тестовое задание</title>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Cesium.js"></script>
+    <script type="text/javascript" src="https://sandcastle.cesium.com/Sandcastle-header.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@{{ site.latest_leaflet_version}}/dist/leaflet.css" integrity="{{site.integrity_hash_css}}" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@{{ site.latest_leaflet_version}}/dist/leaflet.js" integrity="{{site.integrity_hash_uglified}}" crossorigin=""></script>
     <style>
         body{
             margin: 0;
@@ -11,21 +16,115 @@
         }
         .menu{
             display: grid;
-            height: 100px;
-            background-color: #0f0;
+            height: 20vh;
+            background-color: #aaa;
         }
         .menu button{
             width: 100px;
+            height: 50px;
+        }
+        .cesium-viwer{
+            display: block;
+            position: relative;
+            height: 40vh;
+            width: 100vw;
+            background-color: #b7bcff;
+        }
+        #cesiumContainer{
+            width: 100vw;
+            height: 40vh;
+           /*  display: flex; */
+        }
+        .leaflet{
+            width: 100vw;
+            height: 40vh;
+        }
+        .look-button{
+
         }
     </style>
 </head>
 <body>
     <div class="menu">
-        <button title="Загрузка файла">Загрузка файла</button>
-        <button title="Показать данные">Показать данные</button>
+        <div><input type="file" id="inputFile" title="Загрузка файла">Поместить файл .xml сюда</input></div>
+        <div><h4 id="status">Status</h4></div>
+        <button title="Загрузка файла" id="button1" class="button look-button">Загрузка файла</button>
+        <button title="Показать данные" class="button look-button">Показать данные</button>
     </div>
-    <div class="">
+    <div class="cesium-viwer">
+        <div id="cesiumContainer" class="fullSize"></div>
+    </div>
+    <div class="leaflet"></div>
+    <script>
+        
+    </script>
+    <script>
+        const selectedFile = document.querySelector('#inputFile')
+        const xmlnsTns="http://rosleshoz.gov.ru/xmlns/forestReforestation/4.5"
+        selectedFile.addEventListener("change", handleFiles)
+        let inputObj
+        function readXML(xml){
+            let arr=[]
+            let number = xml.getElementsByTagNameNS(xmlnsTns,'number')[0].textContent
+            let date = xml.getElementsByTagNameNS(xmlnsTns,'date')[0].textContent
+            let location = xml.getElementsByTagNameNS(xmlnsTns,'explication')[0].getElementsByTagNameNS(xmlnsTns,'row')
+            for (const elem of location){
+                arr.push([parseFloat(elem.getElementsByTagNameNS(xmlnsTns,'longitude')[0].textContent),
+                parseFloat(elem.getElementsByTagNameNS(xmlnsTns,'latitude')[0].textContent)])
+            }
+            //console.log(number, date)
+            //console.log(location.getElementsByTagNameNS(xmlnsTns,'row'))
 
-    </div>
+            
+            return {'number':number,'date':date, location:arr}
+        }
+        function handleFiles() {
+            let file = this.files[0];
+            if (file.type=="text/xml"||file.type=="text/plain"){
+                let reader  = new FileReader();
+                let parser = new DOMParser();
+                let xml
+                reader.readAsText(file)
+                console.log(reader)
+                reader.onload = function() {
+                    xml = parser.parseFromString(reader.result,"text/xml");
+                    
+                    console.log(1,xml);
+                    //console.log(xml.getElementsByTagName('tns:number'));
+                    let inputObj = readXML(xml)
+                    console.log(inputObj)
+                    document.querySelector('#status').innerHTML='Файл успешно загружен!'
+                    document.querySelector('#button1').addEventListener("click",fuction1)
+                };
+                reader.onerror = function() {
+                    document.querySelector('#status').innerHTML='Ошибка чтения файла!!!'
+                };
+            }else{
+                document.querySelector('#status').innerHTML='Неверный файл. Загрузите XML-файл'
+            }
+            console.log(file)
+        
+        }
+        async function fuction1(){
+            await fetching()
+        }
+        //import Cesium from 'cesium'
+        let data = sessionStorage.getItem('key');
+        //console.log(data);
+        //document.querySelector('#glotalshow1').forEach(res=>{console.log(res)})
+        console.log(document.querySelector('#glotalshow1'))
+        function startup(Cesium) {
+            'use strict';
+            //Sandcastle_Begin
+            const viewer = new Cesium.Viewer("cesiumContainer");
+        
+            //Sandcastle_End
+            Sandcastle.finishedLoading();
+        }
+        if (typeof Cesium !== 'undefined') {
+            window.startupCalled = true;
+            startup(Cesium);
+        }
+    </script>
 </body>
 </html>
