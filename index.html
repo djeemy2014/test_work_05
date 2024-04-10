@@ -135,7 +135,7 @@
                 description:`<table class="cesium-infoBox-defaultTable">
                     <tbody>
                         <tr>
-                            <th>Номер Конnура</th>
+                            <th>Номер Контура</th>
                             <td>${inputObj.number}</td>
                         </tr>
                         <tr>
@@ -148,7 +148,7 @@
             })
             const poligonAdd = viewerRef.entities.add(entity)
             viewerRef.camera.flyTo({
-                destination : Cesium.Cartesian3.fromDegrees(92.85055, 57.17743, 15000.0)
+                destination : Cesium.Cartesian3.fromDegrees(inputObj.location[0], inputObj.location[1], 15000.0)
             })
             console.log(viewerRef)
             console.log(poligon)
