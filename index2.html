@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тестовое задание</title>
+    <script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet.js"></script>
+    <link href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" rel="stylesheet"/>
+    <style>
+        body{
+            margin: 0;
+            padding: 0;
+        }
+        .menu{
+            display: grid;
+            height: 10vh;
+            background-color: #aaa;
+        }
+        .menu button{
+            width: 100px;
+            height: 50px;
+        }
+        .cesium-viwer{
+            display: block;
+            position: relative;
+            height: 45vh;
+            width: 100vw;
+            background-color: #b7bcff;
+        }
+        #cesiumContainer{
+            width: 100vw;
+            height: 45vh;
+           /*  display: flex; */
+        }
+        .leaflet{
+            display: grid;
+            justify-content: center;
+            align-items: center;
+            width: 100vw;
+            height: 100vh;
+        }
+        .off-button{
+            background-color: #ccc;
+            color: #888;
+        }
+        .on-button{
+            background-color: #fff;
+            color: #000;
+        }
+        #map{
+            width: 100vw;
+            height: 80%;
+        }
+    </style>
+</head>
+<body>
+    <div class="leaflet">
+        <h1>
+            Leaflet.js
+        </h1>
+        <div id="map">
+
+        </div>
+    </div>
+    <script>
+        
+    </script>
+    <script>
+       const map = L.map('map').setView([51.505, -0.09], 13);
+
+const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	maxZoom: 19,
+	attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+}).addTo(map);
+
+const marker = L.marker([51.5, -0.09]).addTo(map)
+	.bindPopup('<b>Hello world!</b><br />I am a popup.').openPopup();
+
+const circle = L.circle([51.508, -0.11], {
+	color: 'red',
+	fillColor: '#f03',
+	fillOpacity: 0.5,
+	radius: 500
+}).addTo(map).bindPopup('I am a circle.');
+
+const polygon = L.polygon([
+	[51.509, -0.08],
+	[51.503, -0.06],
+	[51.51, -0.047]
+]).addTo(map).bindPopup('I am a polygon.');
+
+
+const popup = L.popup()
+	.setLatLng([51.513, -0.09])
+	.setContent('I am a standalone popup.')
+	.openOn(map);
+
+function onMapClick(e) {
+	popup
+		.setLatLng(e.latlng)
+		.setContent(`You clicked the map at ${e.latlng.toString()}`)
+		.openOn(map);
+}
+
+map.on('click', onMapClick);
+
+    </script>
+</body>
+</html>

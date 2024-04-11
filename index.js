@@ -14,6 +14,11 @@ app.get('/',function(req,res) {
     console.log('/', req.ip,  new Date())
     //console.log(req)
   });
+app.get('/2',function(req,res) {
+    res.sendFile('./index2.html',optionsPath);
+    console.log('/', req.ip,  new Date())
+    //console.log(req)
+  });
 
 app.listen(port, () => {
     console.log(`listening on host ${host} port ${port}`)

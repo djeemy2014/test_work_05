@@ -7,8 +7,8 @@
     <script src="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Cesium.js"></script>
     <script type="text/javascript" src="https://sandcastle.cesium.com/Sandcastle-header.js"></script>
     <link href="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@{{ site.latest_leaflet_version}}/dist/leaflet.css" integrity="{{site.integrity_hash_css}}" crossorigin="" />
-    <script src="https://unpkg.com/leaflet@{{ site.latest_leaflet_version}}/dist/leaflet.js" integrity="{{site.integrity_hash_uglified}}" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet.js"></script>
+    <link href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" rel="stylesheet"/>
     <style>
         body{
             margin: 0;
@@ -50,6 +50,10 @@
             background-color: #fff;
             color: #000;
         }
+        #map{
+            width: 100vw;
+            height: 100%;
+        }
     </style>
 </head>
 <body>
@@ -63,9 +67,12 @@
         <div id="cesiumContainer" class="fullSize"></div>
     </div>
     <div class="leaflet">
-        <h1>
+        <!-- <h1>
             Leaflet.js
-        </h1>
+        </h1> -->
+        <div id="map">
+
+        </div>
     </div>
     <script>
         
@@ -78,18 +85,24 @@
         let viewerRef
         function readXML(xml){
             let arr=[]
+            let arr2=[]
             let number = xml.getElementsByTagNameNS(xmlnsTns,'number')[0].textContent
             let date = xml.getElementsByTagNameNS(xmlnsTns,'date')[0].textContent
             let location = xml.getElementsByTagNameNS(xmlnsTns,'explication')[0].getElementsByTagNameNS(xmlnsTns,'row')
             for (const elem of location){
                 arr.push(parseFloat(elem.getElementsByTagNameNS(xmlnsTns,'longitude')[0].textContent),
                 parseFloat(elem.getElementsByTagNameNS(xmlnsTns,'latitude')[0].textContent))
+                arr2.push([
+                parseFloat(elem.getElementsByTagNameNS(xmlnsTns,'latitude')[0].textContent),
+                    parseFloat(elem.getElementsByTagNameNS(xmlnsTns,'longitude')[0].textContent)
+                
+            ])
             }
             //console.log(number, date)
             //console.log(location.getElementsByTagNameNS(xmlnsTns,'row'))
 
             
-            return {'number':number,'date':date, location:arr}
+            return {'number':number,'date':date, location:arr, locationLeaflet:arr2}
         }
         function handleFiles() {
             let file = this.files[0];
@@ -150,8 +163,21 @@
             viewerRef.camera.flyTo({
                 destination : Cesium.Cartesian3.fromDegrees(inputObj.location[0], inputObj.location[1], 15000.0)
             })
-            console.log(viewerRef)
-            console.log(poligon)
+            //console.log(viewerRef)
+            //console.log(poligon)
+            const polygon2 = L.polygon(inputObj.locationLeaflet).addTo(map).bindPopup(`<table class="cesium-infoBox-defaultTable">
+                    <tbody>
+                        <tr>
+                            <th>Номер Контура</th>
+                            <td>${inputObj.number}</td>
+                        </tr>
+                        <tr>
+                            <th>Дата Учета</th>
+                            <td>${inputObj.date}</td>
+                        </tr>
+                    </tbody>
+                    </table>`);
+            map.setView([ inputObj.location[1], inputObj.location[0]], 13)
         }
         //import Cesium from 'cesium'
         let data = sessionStorage.getItem('key');
@@ -166,10 +192,18 @@
             Sandcastle.finishedLoading();
             return viewer
         }
+        const map = L.map('map').setView([57, 37], 6);
+
+        const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        	maxZoom: 19,
+        	attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+        
         if (typeof Cesium !== 'undefined') {
             window.startupCalled = true;
             viewerRef = startup(Cesium);
         }
+        
     </script>
 </body>
 </html>

@@ -21,6 +21,7 @@
   "homepage": "https://github.com/djeemy2014/test_work_05#readme",
   "dependencies": {
     "express": "^4.19.2",
+    "leaflet": "^1.9.4",
     "nodemon": "^3.1.0"
   }
 }
